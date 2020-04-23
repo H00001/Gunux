@@ -1,5 +1,5 @@
 .idea
 system.img
 *.iml
-*.asm
+*.bat
 src
