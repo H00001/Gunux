@@ -1,0 +1,6 @@
+system.img:kernel.bat boot.bat
+
+boot.bat:
+	nasm boot.asm -o boot.bat
+kernel.bat:
+	nasm kernel.asm -o kernel.bat
