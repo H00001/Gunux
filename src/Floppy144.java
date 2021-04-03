@@ -4,17 +4,17 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 
 public class Floppy144 {
-    byte[][] SECTORS = new byte[2880][512];
-    byte[] fileBytes;
+    private static final int SECTORS_SUM = 2880;
+    private static final int SECTORS_LEN = 512;
+    private final byte[][] SECTORS = new byte[SECTORS_SUM][SECTORS_LEN];
 
-    public Floppy144() throws IOException {
+    public Floppy144() {
         SECTORS[0][510] = 0x55;
         SECTORS[0][511] = (byte) 0xaa;
-
     }
 
     public Floppy144 writFile(String filename, String... appendix) throws IOException {
-        fileBytes = Files.readAllBytes(new File(filename).toPath());
+        byte[] fileBytes = Files.readAllBytes(new File(filename).toPath());
         System.out.printf("write SECTORS：%d SUCCEED\n",0);
         if (fileBytes.length > 510) {
             throw new IllegalArgumentException("boot lead too much");
@@ -38,7 +38,7 @@ public class Floppy144 {
 
     private byte[] merge() {
         byte[] las = new byte[1474560];
-        for (int i = 0; i < 2880; i++) {
+        for (int i = 0; i < SECTORS_SUM; i++) {
             System.arraycopy(SECTORS[i], 0, las, i * 512, 512);
         }
         return las;

@@ -1,50 +1,42 @@
-org  0x7c00;
+%include "pm.inc"
 
+org   0x7c00
 
-entry:
-    mov  ax, 0
-    mov  ss, ax
-    mov  ds, ax
-    mov  es, ax
-    mov  si, msg
+jmp   LABEL_BEGIN
 
+[SECTION .gdt]
+LABEL_GDT:          Descriptor        0,            0,                   0
+LABEL_DESC_VIDEO:   Descriptor     0B8000h,         0ffffh,           DA_DRW
+LABEL_DESC_5M:      Descriptor     0500000h,        0ffffh,           DA_DRW
+LABLE_GLOBAL:       Descriptor     0800000h,        0ffffffh,         DA_DRW
 
-readFloppy:
-    mov          CH, 1        ;CH 用来存储柱面号
-    mov          DH, 0        ;DH 用来存储磁头号
-    mov          CL, 2        ;CL 用来存储扇区号
+GdtLen     equ    $ - LABEL_GDT
+GdtPtr     dw     GdtLen - 1
+           dd     0
+START      equ    0x8000
+SelectorVideo     equ   LABEL_DESC_VIDEO  -  LABEL_GDT
+Selector5M        equ   LABEL_DESC_5M - LABEL_GDT
+SelectorGLOBAL    equ   LABLE_GLOBAL - LABEL_GDT
 
-    mov          BX, msg       ; ES:BX 数据存储缓冲区
+[SECTION  .s16]
+[BITS  16]
+LABEL_BEGIN:
+     mov   ax, cs
+     mov   ds, ax
+     mov   es, ax
+     mov   ss, ax
+     call  READ_FLOPPY
+     jmp   START
 
-    mov          AH, 0x02      ;  AH = 02 表示要做的是读盘操作
-    mov          AL,  1        ; AL 表示要练习读取几个扇区
-    mov          DL, 0         ;驱动器编号，一般我们只有一个软盘驱动器，所以写死   
-                               ;为0
-    INT          0x13          ;调用BIOS中断实现磁盘读取功能
-
-    jc           error
-
-putloop:
-    mov  al, [si]
-    add  si, 1
-    cmp  al, 0
-    je   fin
-    mov  ah, 0x0e
-    mov  bx, 15
-    int  0x10
-    jmp  putloop
-
-
-
-fin:
-    HLT
-    jmp  fin
-
-error:
-    mov si, errmsg
-    jmp   putloop
-
-msg:
-    RESB   64
-errmsg:
-    DB "error"
+READ_FLOPPY:
+     mov ax,0
+     mov es,ax
+     mov bx,0x8000
+     mov al,1
+     mov ch,0
+     mov cl,2
+     mov dl,0
+     mov dh,0
+     mov ah,2
+     int 13h
+     ret
