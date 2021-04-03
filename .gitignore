@@ -1,0 +1,7 @@
+.idea
+system.img
+*.iml
+*.bat
+src
+.setting
+bin
